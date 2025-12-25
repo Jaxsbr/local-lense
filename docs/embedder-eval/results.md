@@ -10,7 +10,17 @@ NOTE: We have to re-index the RAG store to ensure the embedding for store and qu
 
 ## Xenova/all-MiniLM-L6-v2 (base line current)
 
-### Results:
+### Results (with keywordBoost: false):
+
+```
+SCORE:  0.49  SOURCE:  _context-vault/x-archive/17-11-2025 Monday (cooldown).md
+SCORE:  0.45  SOURCE:  personal/my-career/hub.md
+SCORE:  0.40  SOURCE:  x-archive/achievement-discoveries/hub.md
+SCORE:  0.39  SOURCE:  x-archive/achievement-discoveries/Initial Chat.md
+SCORE:  0.36  SOURCE:  general/feedback/end-of-cycle-review-2025-08-28.md
+```
+
+### Results (with keywordBoost: true, keywordBoostWeight: 1.0):
 
 ```
 SCORE:  0.85  SOURCE:  personal/my-career/hub.md
@@ -22,7 +32,17 @@ SCORE:  0.49  SOURCE:  _context-vault/x-archive/17-11-2025 Monday (cooldown).md
 
 ## intfloat/e5-small
 
-### Results:
+### Results (with keywordBoost: false):
+
+```
+SCORE:  0.85  SOURCE:  personal/my-career/hub.md
+SCORE:  0.85  SOURCE:  general/feedback/nes758-process-improvement-feedback.md
+SCORE:  0.85  SOURCE:  achievement-discoveries/decisions/README.md
+SCORE:  0.84  SOURCE:  work/_work_report/07.13-17-oct (cycle).md
+SCORE:  0.84  SOURCE:  x-archive/achievement-discoveries/tasks.md
+```
+
+### Results (with keywordBoost: true, keywordBoostWeight: 1.0):
 
 ```
 SCORE:  1.00  SOURCE:  personal/my-career/hub.md
@@ -34,7 +54,17 @@ SCORE:  0.85  SOURCE:  achievement-discoveries/decisions/README.md
 
 ## intfloat/e5-base-v2
 
-### Results:
+### Results (with keywordBoost: false):
+
+```
+SCORE:  0.79  SOURCE:  _context-vault/x-archive/17-11-2025 Monday (cooldown).md
+SCORE:  0.78  SOURCE:  specs/Cycle 05/System Prompt Sturcture.md
+SCORE:  0.78  SOURCE:  _context-vault/content-guides/Project-Hub.md
+SCORE:  0.78  SOURCE:  _context-vault/content-guides/ADR.md
+SCORE:  0.77  SOURCE:  _context-vault/content-guides/Quick-Note.md
+```
+
+### Results (with keywordBoost: true, keywordBoostWeight: 1.0):
 
 ```
 SCORE:  1.00  SOURCE:  specs/Cycle 05/System Prompt Sturcture.md
@@ -46,7 +76,17 @@ SCORE:  0.77  SOURCE:  _context-vault/content-guides/Quick-Note.md
 
 ## BAAI/bge-base-en-v1.5
 
-### Results:
+### Results (with keywordBoost: false):
+
+```
+SCORE:  0.67  SOURCE:  _context-vault/x-archive/17-11-2025 Monday (cooldown).md
+SCORE:  0.64  SOURCE:  general/tasks/chat-with-phil.md
+SCORE:  0.64  SOURCE:  specs/Cycle 05/System Prompt Sturcture.md
+SCORE:  0.63  SOURCE:  x-archive/achievement-discoveries/Initial Chat.md
+SCORE:  0.63  SOURCE:  Code/_context-vault/_priorities.md
+```
+
+### Results (with keywordBoost: true, keywordBoostWeight: 1.0):
 
 ```
 SCORE:  0.94  SOURCE:  specs/Cycle 05/System Prompt Sturcture.md

@@ -28,90 +28,165 @@ The best alternatives often come from the **E5** and **BGE** families, which con
 
 This query was tested against a local knowledge base containing career development documents, feedback notes, project hubs, and templates. The ideal behavior is to rank highly relevant documents (career development plans, professional feedback) highest, with proper score differentiation showing relevancy degradation.
 
+All models were tested **with and without keyword boosting** (keywordBoostWeight: 1.0) to assess the impact of keyword enhancement on ranking quality.
+
 ### Model Performance Analysis
 
 #### 1. Xenova/all-MiniLM-L6-v2 (Baseline)
 
-**Results:**
-- **Rank 1 (0.85)**: `personal/my-career/hub.md` - ✅ **Highly Relevant** - Career preparation hub with professional development planning, learning plans, and skill development strategies
-- **Rank 2 (0.80)**: `x-archive/achievement-discoveries/hub.md` - ❌ **Not Relevant** - System analysis project documentation
-- **Rank 3 (0.76)**: `general/feedback/end-of-cycle-review-2025-08-28.md` - ✅ **Relevant** - Contains growth areas, development feedback, and action items for professional development
-- **Rank 4 (0.49)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant** - Client project discussion notes
-- **Rank 5 (0.49)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant** - Contains career development advice but not specifically about development plans
+**Without Keyword Boost:**
+- **Rank 1 (0.49)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+- **Rank 2 (0.45)**: `personal/my-career/hub.md` - ✅ **Highly Relevant** - Career development hub
+- **Rank 3 (0.40)**: `x-archive/achievement-discoveries/hub.md` - ❌ **Not Relevant**
+- **Rank 4 (0.39)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant**
+- **Rank 5 (0.36)**: `general/feedback/end-of-cycle-review-2025-08-28.md` - ✅ **Relevant** - Development feedback
 
-**Assessment**: 
-- ✅ Correctly identifies the most relevant document as #1
-- ✅ Provides proper score differentiation (0.85 → 0.80 → 0.76 → 0.49 → 0.49)
-- ✅ Includes relevant development feedback in top 3 results
-- ✅ Shows clear relevancy degradation in scores
-- ⚠️ One irrelevant document ranked #2, but scores appropriately differentiate it
+**Assessment (Without Boost)**: ❌ Poor - Wrong top result, relevant career hub only at #2 with low score
+
+**With Keyword Boost (keywordBoostWeight: 1.0):**
+- **Rank 1 (0.85)**: `personal/my-career/hub.md` - ✅ **Highly Relevant** - Career preparation hub with professional development planning
+- **Rank 2 (0.80)**: `x-archive/achievement-discoveries/hub.md` - ❌ **Not Relevant** - System analysis project documentation
+- **Rank 3 (0.76)**: `general/feedback/end-of-cycle-review-2025-08-28.md` - ✅ **Relevant** - Contains growth areas and development feedback
+- **Rank 4 (0.49)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant**
+- **Rank 5 (0.49)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+
+**Assessment (With Boost)**: ✅ Excellent
+- Correctly identifies the most relevant document as #1
+- Provides proper score differentiation (0.85 → 0.80 → 0.76 → 0.49 → 0.49)
+- Includes relevant development feedback in top 3 results
+- Shows clear relevancy degradation in scores
+
+**Verdict**: ✅ **Requires keyword boost** - Without boost, performance is poor; with boost, it's the best overall performer.
 
 #### 2. intfloat/e5-small
 
-**Results:**
-- **Rank 1 (1.00)**: `personal/my-career/hub.md` - ✅ **Highly Relevant** - Correct match
-- **Rank 2 (1.00)**: `general/feedback/nes758-process-improvement-feedback.md` - ⚠️ **Partially Relevant** - Process improvement feedback, not professional development planning
-- **Rank 3 (1.00)**: `work/_work_report/07.13-17-oct (cycle).md` - ❌ **Not Relevant** - Work cycle report with task lists
-- **Rank 4 (1.00)**: `x-archive/achievement-discoveries/tasks.md` - ❌ **Not Relevant** - Project task list
-- **Rank 5 (0.85)**: `achievement-discoveries/decisions/README.md` - ❌ **Not Relevant** - Architectural decision template
+**Without Keyword Boost:**
+- **Rank 1 (0.85)**: `personal/my-career/hub.md` - ✅ **Highly Relevant** - Career development hub
+- **Rank 2 (0.85)**: `general/feedback/nes758-process-improvement-feedback.md` - ⚠️ **Partially Relevant**
+- **Rank 3 (0.85)**: `achievement-discoveries/decisions/README.md` - ❌ **Not Relevant** - Template
+- **Rank 4 (0.84)**: `work/_work_report/07.13-17-oct (cycle).md` - ❌ **Not Relevant** - Work report
+- **Rank 5 (0.84)**: `x-archive/achievement-discoveries/tasks.md` - ❌ **Not Relevant** - Project tasks
 
-**Assessment**:
-- ✅ Correctly identifies the most relevant document as #1
-- ❌ **Critical Issue**: Score compression - all top 4 results scored 1.00, preventing proper ranking
-- ❌ Multiple irrelevant documents (work reports, project tasks) ranked highly with perfect scores
-- ❌ Cannot distinguish between highly relevant and irrelevant documents due to score compression
+**Assessment (Without Boost)**: ⚠️ Good but problematic
+- ✅ Correctly identifies career hub as #1
+- ❌ Score compression - multiple 0.85/0.84 scores make ranking difficult
+- ⚠️ Better than with boost due to less compression
+
+**With Keyword Boost (keywordBoostWeight: 1.0):**
+- **Rank 1 (1.00)**: `personal/my-career/hub.md` - ✅ **Highly Relevant**
+- **Rank 2 (1.00)**: `general/feedback/nes758-process-improvement-feedback.md` - ⚠️ **Partially Relevant**
+- **Rank 3 (1.00)**: `work/_work_report/07.13-17-oct (cycle).md` - ❌ **Not Relevant**
+- **Rank 4 (1.00)**: `x-archive/achievement-discoveries/tasks.md` - ❌ **Not Relevant**
+- **Rank 5 (0.85)**: `achievement-discoveries/decisions/README.md` - ❌ **Not Relevant**
+
+**Assessment (With Boost)**: ❌ Poor - Severe score compression (4 results at 1.00) prevents proper ranking
+
+**Verdict**: ✅ **Better without keyword boost** - Without boost is the second-best option overall, but still suffers from score compression.
 
 #### 3. intfloat/e5-base-v2
 
-**Results:**
-- **Rank 1 (1.00)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant** - System prompt structure documentation
-- **Rank 2 (0.88)**: `content-guides/Project-Hub.md` - ❌ **Not Relevant** - Template file for project hubs
-- **Rank 3 (0.79)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant** - Contains career advice but not development plans
-- **Rank 4 (0.78)**: `content-guides/ADR.md` - ❌ **Not Relevant** - ADR template
-- **Rank 5 (0.77)**: `content-guides/Quick-Note.md` - ❌ **Not Relevant** - Template file
+**Without Keyword Boost:**
+- **Rank 1 (0.79)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+- **Rank 2 (0.78)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant** - System documentation
+- **Rank 3 (0.78)**: `content-guides/Project-Hub.md` - ❌ **Not Relevant** - Template
+- **Rank 4 (0.78)**: `content-guides/ADR.md` - ❌ **Not Relevant** - Template
+- **Rank 5 (0.77)**: `content-guides/Quick-Note.md` - ❌ **Not Relevant** - Template
 
-**Assessment**:
-- ❌ **Critical Issue**: Wrong top result - system prompt structure ranked highest instead of career development hub
-- ❌ The actual relevant document (`personal/my-career/hub.md`) is not in top 5 results
-- ❌ Top results are mostly templates and system documentation
-- ❌ Poor overall ranking quality - fails to identify relevant content
+**Assessment (Without Boost)**: ❌ Poor - Career hub not in top 5, mostly templates and wrong documents
+
+**With Keyword Boost (keywordBoostWeight: 1.0):**
+- **Rank 1 (1.00)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant**
+- **Rank 2 (0.88)**: `content-guides/Project-Hub.md` - ❌ **Not Relevant** - Template
+- **Rank 3 (0.79)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+- **Rank 4 (0.78)**: `content-guides/ADR.md` - ❌ **Not Relevant** - Template
+- **Rank 5 (0.77)**: `content-guides/Quick-Note.md` - ❌ **Not Relevant** - Template
+
+**Assessment (With Boost)**: ❌ Poor - Wrong top result, career hub still not in top 5
+
+**Verdict**: ❌ **Not recommended** - Fails with or without keyword boost, ranking wrong documents highest.
 
 #### 4. BAAI/bge-base-en-v1.5
 
-**Results:**
-- **Rank 1 (0.94)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant** - System prompt structure documentation
-- **Rank 2 (0.73)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant** - Client project discussion
-- **Rank 3 (0.67)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant** - Career advice, not development plans
-- **Rank 4 (0.64)**: `general/tasks/chat-with-phil.md` - ❌ **Not Relevant** - Discussion about onboarding timing
+**Without Keyword Boost:**
+- **Rank 1 (0.67)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+- **Rank 2 (0.64)**: `general/tasks/chat-with-phil.md` - ❌ **Not Relevant**
+- **Rank 3 (0.64)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant**
+- **Rank 4 (0.63)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant**
 - **Rank 5 (0.63)**: `_priorities.md` - ❌ **Not Relevant** - Simple todo list
 
-**Assessment**:
-- ❌ **Critical Issue**: Wrong top result - system prompt structure ranked highest
-- ❌ The actual relevant document (`personal/my-career/hub.md`) is not in top 5 results
-- ❌ Top results are mostly irrelevant project documentation and templates
-- ❌ Poor overall ranking quality - fails to identify relevant content
-- ✅ Better score differentiation than e5-small (0.94 → 0.73 → 0.67 → 0.64 → 0.63)
+**Assessment (Without Boost)**: ❌ Poor - Career hub not in top 5, wrong documents ranked
+
+**With Keyword Boost (keywordBoostWeight: 1.0):**
+- **Rank 1 (0.94)**: `specs/Cycle 05/System Prompt Sturcture.md` - ❌ **Not Relevant**
+- **Rank 2 (0.73)**: `x-archive/achievement-discoveries/Initial Chat.md` - ❌ **Not Relevant**
+- **Rank 3 (0.67)**: `x-archive/17-11-2025 Monday (cooldown).md` - ⚠️ **Partially Relevant**
+- **Rank 4 (0.64)**: `general/tasks/chat-with-phil.md` - ❌ **Not Relevant**
+- **Rank 5 (0.63)**: `_priorities.md` - ❌ **Not Relevant**
+
+**Assessment (With Boost)**: ❌ Poor - Wrong top result, career hub not in top 5
+
+**Verdict**: ❌ **Not recommended** - Fails with or without keyword boost, ranking wrong documents highest.
 
 ### Conclusion & Recommendation
 
-**Recommended Model**: **Xenova/all-MiniLM-L6-v2** (baseline)
+#### 🥇 **Best Overall: Xenova/all-MiniLM-L6-v2 WITH Keyword Boost**
 
-Despite being the baseline model with lower theoretical accuracy metrics, **Xenova/all-MiniLM-L6-v2** demonstrates superior practical performance for this RAG use case:
+**Configuration**: `keywordBoost: true, keywordBoostWeight: 1.0`
 
-**Strengths:**
-1. **Correct Top Result**: Identifies the most relevant document (`personal/my-career/hub.md`) as the top match
-2. **Proper Score Differentiation**: Provides meaningful score spread (0.85, 0.80, 0.76, 0.49, 0.49) that allows proper ranking
-3. **Relevant Content in Top 3**: Includes both the career hub and development feedback in top results
-4. **Clear Relevancy Degradation**: Scores appropriately decrease as documents become less relevant
+**Why it's best:**
+1. ✅ **Correct Top Result**: Identifies `personal/my-career/hub.md` (the most relevant document) as #1
+2. ✅ **Excellent Score Differentiation**: Provides meaningful score spread (0.85 → 0.80 → 0.76 → 0.49 → 0.49) enabling proper ranking
+3. ✅ **Relevant Content in Top 3**: Includes both the career hub and development feedback in top results
+4. ✅ **Clear Relevancy Degradation**: Scores appropriately decrease as documents become less relevant
+5. ✅ **Keyword Boost Essential**: Without boost, it performs poorly (wrong top result); with boost, it's clearly superior
 
-**Why Other Models Failed:**
-- **e5-small**: Suffers from score compression (multiple 1.00 scores) that prevents proper ranking, making it impossible to distinguish between highly relevant and irrelevant documents
-- **e5-base-v2**: Fails to identify the correct top result, ranking system documentation and templates above actual relevant content
-- **bge-base-en-v1.5**: Similar failure to e5-base-v2, with wrong top result and missing the relevant career development document entirely
+**Performance Summary:**
+- **Without boost**: ❌ Poor - Wrong top result, career hub at #2 with low score (0.45)
+- **With boost**: ✅ Excellent - Correct top result with proper differentiation
 
-**Key Insight**: Theoretical benchmark performance (MTEB scores) does not always translate to practical RAG ranking quality. The baseline model's smaller size and simpler architecture may actually provide better score differentiation for this use case, preventing the score compression issues seen in larger models.
+#### 🥈 **Second Best: intfloat/e5-small WITHOUT Keyword Boost**
 
-**Recommendation**: Continue using **Xenova/all-MiniLM-L6-v2** for this RAG system. If upgrading is desired, consider testing with query prefix formatting (e.g., "query: guidance on my professional development plan") which some models like BGE support, but initial results suggest the baseline model performs best for this knowledge base.
+**Configuration**: `keywordBoost: false`
+
+**Why it's second:**
+1. ✅ **Correct Top Result**: Identifies career hub as #1 (score 0.85)
+2. ⚠️ **Score Compression Issue**: Multiple results at 0.85/0.84 make ranking less precise than baseline with boost
+3. ✅ **Better without boost**: With boost, compression worsens (4 results at 1.00); without boost is more usable
+
+**Performance Summary:**
+- **Without boost**: ⚠️ Good but compressed - Correct top result but limited differentiation
+- **With boost**: ❌ Poor - Severe compression (4× 1.00) prevents ranking
+
+**Trade-off**: If keyword boosting is not available or desired, e5-small without boost is a viable alternative, though baseline with boost performs significantly better.
+
+#### ❌ **Not Recommended: e5-base-v2 and bge-base-en-v1.5**
+
+Both models fail regardless of keyword boost configuration:
+- Wrong top results (system documentation/templates ranked highest)
+- Relevant career hub document not appearing in top 5
+- Poor overall ranking quality
+
+### Key Insights
+
+1. **Keyword Boost is Critical for Baseline Model**: Xenova/all-MiniLM-L6-v2 transforms from poor to excellent performance with keyword boosting enabled.
+
+2. **Larger Models Can Perform Worse**: Despite better theoretical benchmarks (MTEB scores), e5-base-v2 and bge-base-en-v1.5 fail to identify relevant content, likely due to overfitting or different semantic understanding.
+
+3. **Score Compression in Larger Models**: e5-small shows compression issues that worsen with keyword boost, making it less suitable despite correct top result.
+
+4. **Practical > Theoretical**: Real-world RAG ranking quality doesn't always correlate with benchmark performance - the baseline model with keyword boost outperforms all alternatives.
+
+### Final Recommendation
+
+**Use: Xenova/all-MiniLM-L6-v2 with `keywordBoost: true` and `keywordBoostWeight: 1.0`**
+
+This configuration provides the best combination of:
+- Correct top result identification
+- Proper score differentiation for ranking
+- Relevant content in top results
+- Clear relevancy degradation
+
+**Alternative (if keyword boost unavailable)**: Use intfloat/e5-small with `keywordBoost: false`, accepting some score compression in exchange for correct top result identification.
 
 > **⚠️ Important for @xenova/transformers:** Models must be available in the `Xenova/` namespace on Hugging Face (converted to ONNX format) to work with `@xenova/transformers`. Not all models listed above are available in the Xenova namespace. 
 > 

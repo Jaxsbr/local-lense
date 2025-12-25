@@ -1,11 +1,9 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
 import path from "path";
 import { ConfigService } from "./services/configService";
-import { StateService } from "./services/stateService";
-import { CollectionStateService } from "./services/collectionStateService";
 import { EmbedService } from "./services/embedService";
 import { FileSourceProcessor } from "./ragIndexer/implementations/fileSourceProcessor";
-import { RAGIndexer } from "./ragIndexer/ragIndexer";
+import { RAGIndexer, DOCS_COLLECTION } from "./ragIndexer/ragIndexer";
 import { RAGSearch } from "./ragSearch/ragSearch";
 import { SearchResult } from "./ragSearch/types";
 import { QdrantVectorSearchService } from "./ragSearch/implementations/qdrantVectorSearchService";
@@ -13,10 +11,7 @@ import { QdrantVectorCollectionService } from "./ragSearch/implementations/qdran
 import { QdrantVectorStorageService } from "./ragSearch/implementations/qdrantVectorStorageService";
 
 const configService = new ConfigService();
-const stateService = new StateService();
 const staticConfig = await configService.getStaticConfig();
-const initialCollection = await stateService.getCurrentCollection();
-const collectionState = new CollectionStateService(initialCollection, stateService);
 const qdrantClient = new QdrantClient({ host: "localhost", port: 6333 });
 const embedder = new EmbedService(staticConfig.embeddingModel);
 const searchService = new QdrantVectorSearchService(qdrantClient);
@@ -30,21 +25,17 @@ const ragIndexer = new RAGIndexer(
     embedder,
     collectionService,
     storageService,
-    collectionState,
     staticConfig
 );
-await ragIndexer.init();
 
-
-// Run 'refresh' to update stale RAG, e.g. when source documents have changed
-await ragIndexer.refresh();
-
+// Uncomment to refresh the RAG store
+// await ragIndexer.init();
 
 // Search collection
 const ragSearch = new RAGSearch(
     embedder,
     searchService,
-    collectionState,
+    DOCS_COLLECTION,
     {
         resultLimit: staticConfig.searchResultLimit,
         keywordBoost: staticConfig.keywordBoost ?? true,

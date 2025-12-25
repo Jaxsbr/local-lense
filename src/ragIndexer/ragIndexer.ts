@@ -1,22 +1,16 @@
 import { ISourceProcessor, SourceItem } from "./types";
 import { StaticConfig } from "../services/configService";
-import { CollectionStateService } from "../services/collectionStateService";
 import { IVectorEmbedder } from "../types";
 import {
     IVectorCollectionService,
     IVectorStorageService,
 } from "../ragSearch/types";
 
-const DOCS_V1 = "docs_v1";
-const DOCS_V2 = "docs_v2";
+export const DOCS_COLLECTION = "docs";
 const VECTOR_DISTANCE = "Cosine";
 const BATCH_SIZE = 250;
 const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 1000;
-
-interface VerificationResult {
-    requiresPopulation: boolean;
-}
 
 interface CustomPoint {
     id: number;
@@ -39,79 +33,41 @@ export class RAGIndexer {
     private _embedder: IVectorEmbedder;
     private _collectionService: IVectorCollectionService;
     private _storageService: IVectorStorageService;
-    private _collectionState: CollectionStateService;
-    private _staticConfig: StaticConfig | null = null;
+    private _staticConfig: StaticConfig;
 
     constructor(
         fileProcessor: ISourceProcessor,
         embedder: IVectorEmbedder,
         collectionService: IVectorCollectionService,
         storageService: IVectorStorageService,
-        collectionState: CollectionStateService,
         staticConfig: StaticConfig
     ) {
         this._fileProcessor = fileProcessor;
         this._embedder = embedder;
         this._collectionService = collectionService;
         this._storageService = storageService;
-        this._collectionState = collectionState;
         this._staticConfig = staticConfig;
     }
 
     public async init(): Promise<void> {
-        const currentCollection = this._collectionState.getCurrentCollection();
-        console.log(`Initializing with collection: ${currentCollection}`);
-        const { requiresPopulation } = await this.verifyCollection(currentCollection);
-        if (requiresPopulation) {
-            console.log(`Collection requires population, starting...`);
-            await this.populate(currentCollection);
-        } else {
-            console.log(`Collection already populated, skipping population`);
-        }
-    }
+        const collectionName = DOCS_COLLECTION;
+        console.log(`Initializing collection: ${collectionName}`);
 
-    private async verifyCollection(collectionName: string): Promise<VerificationResult> {
+        // Always delete existing collection if it exists
         const exists = await this._collectionService.collectionExists(collectionName);
-
-        if (!exists) {
-            if (!this._staticConfig) {
-                throw new Error("StaticConfig is required to create collection");
-            }
-            await this._collectionService.createCollection(collectionName, {
-                vectorSize: this._staticConfig.vectorSize,
-                distance: VECTOR_DISTANCE,
-            });
-            return { requiresPopulation: true };
-        }
-
-        // Check if collection is empty
-        const { pointsCount } = await this._collectionService.getCollectionInfo(collectionName);
-        console.log(`Collection ${collectionName} exists with ${pointsCount} points`);
-
-        return { requiresPopulation: pointsCount === 0 };
-    }
-
-    public async refresh(): Promise<void> {
-        // Get current collection and determine next version
-        const currentCollection = this._collectionState.getCurrentCollection();
-        const nextCollection = currentCollection == DOCS_V1 ? DOCS_V2 : DOCS_V1;
-
-        // Create and populate next collection
-        const { requiresPopulation } = await this.verifyCollection(nextCollection);
-        if (requiresPopulation) {
-            await this.populate(nextCollection);
-        }
-
-        // Update the collection state (single source of truth)
-        // This automatically updates all components that depend on it
-        // AND persists to .local-lense-state.json so it survives restarts
-        await this._collectionState.updateCurrentCollection(nextCollection);
-
-        // Delete previous collection version
-        const exists = await this._collectionService.collectionExists(currentCollection);
         if (exists) {
-            await this._collectionService.deleteCollection(currentCollection);
+            console.log(`Deleting existing collection: ${collectionName}`);
+            await this._collectionService.deleteCollection(collectionName);
         }
+
+        // Always create and populate
+        await this._collectionService.createCollection(collectionName, {
+            vectorSize: this._staticConfig.vectorSize,
+            distance: VECTOR_DISTANCE,
+        });
+
+        await this.populate(collectionName);
+        console.log(`Collection ${collectionName} initialized and populated`);
     }
 
     private async generatePoints(sourceItems: ReadonlyArray<SourceItem>): Promise<Array<CustomPoint>> {

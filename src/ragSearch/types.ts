@@ -38,7 +38,7 @@ export interface IVectorCollectionService {
         collectionName: string,
         config: { vectorSize: number; distance: "Cosine" | "Euclid" | "Dot" }
     ): Promise<void>;
-    getCollectionInfo(collectionName: string): Promise<{ pointsCount: number }>;
+    getCollectionInfo(collectionName: string): Promise<{ pointsCount: number; vectorSize?: number }>;
     deleteCollection(collectionName: string): Promise<void>;
 }
 

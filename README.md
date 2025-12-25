@@ -35,11 +35,9 @@ local-lense uses a RAG (Retrieval-Augmented Generation) architecture:
    - Searches Qdrant for similar document chunks
    - Returns relevant sections with relevance scores
 
-3. **Safe Refresh Mechanism**:
-   - Uses dual-collection approach (docs_v1/docs_v2) for safe updates
-   - When refreshing, writes to the inactive collection first
-   - Only switches to the new collection after successful indexing
-   - Prevents corruption of the active collection if indexing fails
+3. **Refresh Mechanism**:
+   - Uses a single "docs" collection that is dropped and re-indexed on initialization
+   - Simple and straightforward approach for reliable indexing
 
 4. **MCP Integration** (Future):
    - Exposes search as MCP tools
@@ -124,7 +122,7 @@ The main user configuration file located in the project root:
   - Higher values increase the boost effect
   - Default: `0.2` (20% boost weight)
 
-**Note**: Collection management is handled automatically by the system. The active collection (docs_v1 or docs_v2) is managed internally using a dual-collection approach for safe updates. This state is stored in `.local-lense-state.json` and should not be modified manually.
+**Note**: Collection management is handled automatically by the system. The system uses a single "docs" collection that is always dropped and re-indexed on initialization.
 
 ### Docker Compose
 
@@ -263,9 +261,9 @@ Search Flow:                                      │
 
 ### Empty search results
 
-- Run indexing first: `await ragIndexer.refresh()` in `main.ts`
+- Run indexing first: `await ragIndexer.init()` in `main.ts`
 - Verify documents were processed (check Qdrant dashboard at http://localhost:6333/dashboard)
-- Check that `.local-lense-state.json` exists and contains a valid collection name
+- Ensure the "docs" collection exists and contains indexed documents
 
 ### Build errors
 
@@ -283,8 +281,7 @@ local-lense/
 │   ├── main.ts                    # Entry point (test script)
 │   ├── services/                  # Core services
 │   │   ├── configService.ts       # Configuration management
-│   │   ├── embedService.ts       # Embedding generation
-│   │   └── collectionStateService.ts
+│   │   └── embedService.ts       # Embedding generation
 │   ├── ragIndexer/                # Indexing logic
 │   │   ├── ragIndexer.ts
 │   │   └── implementations/

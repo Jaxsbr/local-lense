@@ -25,10 +25,15 @@ export class QdrantVectorCollectionService implements IVectorCollectionService {
         });
     }
 
-    async getCollectionInfo(collectionName: string): Promise<{ pointsCount: number }> {
+    async getCollectionInfo(collectionName: string): Promise<{ pointsCount: number; vectorSize?: number }> {
         const collectionInfo = await this.client.getCollection(collectionName);
+        const vectorsConfig = collectionInfo.config?.params?.vectors;
+        const vectorSize = typeof vectorsConfig === 'object' && vectorsConfig !== null && 'size' in vectorsConfig
+            ? (vectorsConfig as { size: number }).size
+            : undefined;
         return {
             pointsCount: collectionInfo.points_count || 0,
+            vectorSize: vectorSize,
         };
     }
 
